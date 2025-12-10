@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,7 +28,9 @@ public class WardrobeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_wardrobe, container, false);
 
         recyclerView = view.findViewById(R.id.recycler_wardrobe);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recyclerView.addItemDecoration(new GridSpacingItemDecoration(16));
+
 
         loadClothes();
 
