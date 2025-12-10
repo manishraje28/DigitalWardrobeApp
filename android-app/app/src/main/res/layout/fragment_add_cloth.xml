@@ -1,0 +1,60 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/image_preview"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:background="#EEEEEE"
+            android:src="@drawable/ic_launcher_background"/>
+
+        <Button
+            android:id="@+id/button_pick_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choose Image"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/edit_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Type (e.g., Shirt, Jeans)" />
+
+        <EditText
+            android:id="@+id/edit_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Color (e.g., Blue)" />
+
+        <EditText
+            android:id="@+id/edit_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Category (Top, Bottom, Ethnic)" />
+
+        <EditText
+            android:id="@+id/edit_occasion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Occasion (Casual, Formal)" />
+
+        <Button
+            android:id="@+id/button_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Cloth"
+            android:layout_marginTop="20dp" />
+
+    </LinearLayout>
+
+</ScrollView>
