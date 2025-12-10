@@ -2,6 +2,7 @@ package com.example.digitalwardrobe;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +38,19 @@ public class ClothingAdapter extends RecyclerView.Adapter<ClothingAdapter.ViewHo
         holder.type.setText(item.type != null ? item.type : "Unknown");
         holder.color.setText(item.color != null ? "Color: " + item.color : "Color: -");
         holder.occasion.setText(item.occasion != null ? "Occasion: " + item.occasion : "Occasion: -");
+        holder.itemView.setOnClickListener(v -> {
+            ClothingDetailsFragment fragment = new ClothingDetailsFragment();
+
+            Bundle bundle = new Bundle();
+            bundle.putInt("id", item.id);            // Pass ID only (best practice)
+            fragment.setArguments(bundle);
+
+            ((MainActivity) context).getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.main_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         if (item.imageUri != null) {
             try {

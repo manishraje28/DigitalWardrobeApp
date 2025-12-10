@@ -7,8 +7,6 @@ import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -23,21 +21,51 @@ public class AddClothFragment extends Fragment {
 
     private ImageView imagePreview;
     private Uri selectedImageUri = null;
+    private int editId = -1;
+    private ClothingItem editingItem = null;
+
+    EditText editType, editColor, editCategory, editOccasion;
 
     ActivityResultLauncher<Intent> imagePickerLauncher;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_add_cloth, container, false);
 
-        imagePreview = view.findViewById(R.id.image_preview);
-        Button pickImage = view.findViewById(R.id.button_pick_image);
+        // Check for edit mode
+        if (getArguments() != null) {
+            editId = getArguments().getInt("edit_id", -1);
+        }
 
-        EditText editType = view.findViewById(R.id.edit_type);
-        EditText editColor = view.findViewById(R.id.edit_color);
-        EditText editCategory = view.findViewById(R.id.edit_category);
-        EditText editOccasion = view.findViewById(R.id.edit_occasion);
+        // UI references
+        imagePreview = view.findViewById(R.id.image_preview);
+        editType = view.findViewById(R.id.edit_type);
+        editColor = view.findViewById(R.id.edit_color);
+        editCategory = view.findViewById(R.id.edit_category);
+        editOccasion = view.findViewById(R.id.edit_occasion);
+        Button pickImage = view.findViewById(R.id.button_pick_image);
         Button saveButton = view.findViewById(R.id.button_save);
+
+        // Load old data if editing
+        if (editId != -1) {
+            new Thread(() -> {
+                AppDatabase db = AppDatabase.getInstance(requireContext());
+                editingItem = db.clothingItemDao().getItemById(editId);
+
+                requireActivity().runOnUiThread(() -> {
+                    imagePreview.setImageURI(Uri.parse(editingItem.imageUri));
+                    editType.setText(editingItem.type);
+                    editColor.setText(editingItem.color);
+                    editCategory.setText(editingItem.category);
+                    editOccasion.setText(editingItem.occasion);
+
+                    selectedImageUri = Uri.parse(editingItem.imageUri);
+                });
+
+            }).start();
+        }
 
         // Initialize image picker
         imagePickerLauncher = registerForActivityResult(
@@ -46,13 +74,14 @@ public class AddClothFragment extends Fragment {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         selectedImageUri = result.getData().getData();
                         imagePreview.setImageURI(selectedImageUri);
-                    }
-                    requireContext().getContentResolver()
-                            .takePersistableUriPermission(
+
+                        try {
+                            requireContext().getContentResolver().takePersistableUriPermission(
                                     selectedImageUri,
                                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                             );
-
+                        } catch (Exception ignored) {}
+                    }
                 });
 
         pickImage.setOnClickListener(v -> {
@@ -61,33 +90,45 @@ public class AddClothFragment extends Fragment {
             imagePickerLauncher.launch(intent);
         });
 
+        // Save button logic
         saveButton.setOnClickListener(v -> {
-            String type = editType.getText().toString();
-            String color = editColor.getText().toString();
-            String category = editCategory.getText().toString();
-            String occasion = editOccasion.getText().toString();
 
-            if (selectedImageUri == null || type.isEmpty() || color.isEmpty() || category.isEmpty() || occasion.isEmpty()) {
+            if (selectedImageUri == null ||
+                    editType.getText().toString().isEmpty() ||
+                    editColor.getText().toString().isEmpty() ||
+                    editCategory.getText().toString().isEmpty() ||
+                    editOccasion.getText().toString().isEmpty()) {
+
                 Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Save to Room DB
             ClothingItem item = new ClothingItem();
             item.imageUri = selectedImageUri.toString();
-            item.type = type;
-            item.color = color;
-            item.category = category;
-            item.occasion = occasion;
+            item.type = editType.getText().toString();
+            item.color = editColor.getText().toString();
+            item.category = editCategory.getText().toString();
+            item.occasion = editOccasion.getText().toString();
             item.createdAt = System.currentTimeMillis();
 
             new Thread(() -> {
-                AppDatabase db = AppDatabase.getInstance(getContext());
-                db.clothingItemDao().insertClothingItem(item);
+                AppDatabase db = AppDatabase.getInstance(requireContext());
 
-                getActivity().runOnUiThread(() ->
-                        Toast.makeText(getContext(), "Cloth Saved!", Toast.LENGTH_SHORT).show()
-                );
+                if (editId == -1) {
+                    db.clothingItemDao().insertClothingItem(item);
+                } else {
+                    item.id = editId;
+                    db.clothingItemDao().updateItem(item);
+                }
+
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(),
+                            (editId == -1) ? "Cloth Saved!" : "Cloth Updated!",
+                            Toast.LENGTH_SHORT).show();
+
+                    requireActivity().getSupportFragmentManager().popBackStack();
+                });
+
             }).start();
         });
 
