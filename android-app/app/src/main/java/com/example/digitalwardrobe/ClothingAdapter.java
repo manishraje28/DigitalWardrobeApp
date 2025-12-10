@@ -18,6 +18,7 @@ public class ClothingAdapter extends RecyclerView.Adapter<ClothingAdapter.ViewHo
 
     private Context context;
     private List<ClothingItem> itemList;
+    List<ClothingItem> clothingList;
 
     public ClothingAdapter(Context context, List<ClothingItem> itemList) {
         this.context = context;
@@ -67,6 +68,11 @@ public class ClothingAdapter extends RecyclerView.Adapter<ClothingAdapter.ViewHo
     @Override
     public int getItemCount() {
         return itemList.size();
+    }
+
+    public void setClothingList(List<ClothingItem> newList) {
+        this.clothingList = newList;
+        notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
