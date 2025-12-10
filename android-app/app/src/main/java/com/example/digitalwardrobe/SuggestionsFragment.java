@@ -1,64 +1,94 @@
 package com.example.digitalwardrobe;
 
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SuggestionsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.List;
+import java.util.Random;
+
 public class SuggestionsFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    TextView suggestionText;
+    ImageView suggestionImage;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public SuggestionsFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment fragment_suggestions.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static SuggestionsFragment newInstance(String param1, String param2) {
-        SuggestionsFragment fragment = new SuggestionsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    public SuggestionsFragment() {}
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_suggestions, container, false);
+
+        suggestionText = view.findViewById(R.id.text_suggestion);
+        suggestionImage = view.findViewById(R.id.image_suggestion);
+
+        loadSuggestions();
+
+        return view;
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_suggestions, container, false);
+    private void loadSuggestions() {
+
+        new Thread(() -> {
+
+            AppDatabase db = AppDatabase.getInstance(requireContext());
+            List<ClothingItem> items = db.clothingItemDao().getAllItems();
+
+            if (items == null || items.size() < 2) {
+                requireActivity().runOnUiThread(() ->
+                        suggestionText.setText("Add more clothes to get recommendations.")
+                );
+                return;
+            }
+
+            ClothingItem top = null;
+            ClothingItem bottom = null;
+
+            for (ClothingItem item : items) {
+                if (item == null) continue;
+
+                if (item.category != null && item.category.equalsIgnoreCase("Top")) {
+                    top = item;
+                }
+
+                if (item.category != null && item.category.equalsIgnoreCase("Bottom")) {
+                    bottom = item;
+                }
+            }
+
+            if (top == null || bottom == null) {
+                requireActivity().runOnUiThread(() ->
+                        suggestionText.setText("Add at least one Top and one Bottom.")
+                );
+                return;
+            }
+
+            ClothingItem finalTop = top;
+            ClothingItem finalBottom = bottom;
+
+            requireActivity().runOnUiThread(() -> {
+                suggestionText.setText(
+                        "Today's Outfit:\n" +
+                                finalTop.color + " " + finalTop.type + " + " +
+                                finalBottom.color + " " + finalBottom.type
+                );
+
+                try {
+                    suggestionImage.setImageURI(Uri.parse(finalTop.imageUri));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+        }).start();
     }
+
 }

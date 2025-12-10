@@ -47,6 +47,12 @@ public class AddClothFragment extends Fragment {
                         selectedImageUri = result.getData().getData();
                         imagePreview.setImageURI(selectedImageUri);
                     }
+                    requireContext().getContentResolver()
+                            .takePersistableUriPermission(
+                                    selectedImageUri,
+                                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            );
+
                 });
 
         pickImage.setOnClickListener(v -> {
