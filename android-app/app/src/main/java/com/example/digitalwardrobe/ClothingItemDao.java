@@ -24,19 +24,5 @@ public interface ClothingItemDao {
     void deleteItem(ClothingItem item);
     @Update
     void updateItem(ClothingItem item);
-    @Query("SELECT * FROM clothing_items WHERE " +
-            "type LIKE '%' || :query || '%' OR " +
-            "color LIKE '%' || :query || '%' OR " +
-            "category LIKE '%' || :query || '%' OR " +
-            "occasion LIKE '%' || :query || '%'")
-    List<ClothingItem> searchClothes(String query);
-    @Query("SELECT * FROM clothing_items WHERE color = :color")
-    List<ClothingItem> filterByColor(String color);
-
-    @Query("SELECT * FROM clothing_items WHERE category = :category")
-    List<ClothingItem> filterByCategory(String category);
-
-    @Query("SELECT * FROM clothing_items WHERE occasion = :occasion")
-    List<ClothingItem> filterByOccasion(String occasion);
 
 }
