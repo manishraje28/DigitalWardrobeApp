@@ -32,7 +32,10 @@ public class MainActivity extends AppCompatActivity {
                 fragment = new AddClothFragment();
             } else if (item.getItemId() == R.id.nav_suggestions) {
                 fragment = new SuggestionsFragment();
+            }else if (item.getItemId() == R.id.nav_chat) {
+                fragment = new ChatFragment();
             }
+
 
             return loadFragment(fragment);
         });
@@ -47,5 +50,8 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return false;
+
     }
+
+
 }
